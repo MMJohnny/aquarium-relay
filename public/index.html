@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบควบคุมตู้ปลา</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; margin: 0; }
+    img { width: 100%; max-width: 500px; border-radius: 12px; background: #000; min-height: 250px; }
+    .controls { display: flex; flex-direction: column; gap: 15px; max-width: 300px; margin: 20px auto; }
+    .btn { padding: 18px; font-size: 18px; border: none; border-radius: 10px; color: white; cursor: pointer; }
+    .btn-feed { background-color: #2e7d32; }
+    .btn-light { background-color: #f57c00; }
+  </style>
+</head>
+<body>
+  <h2>ตู้ปลาของฉัน 🐟</h2>
+  <img id="stream" alt="รอภาพจากกล้อง..." />
+  <div class="controls">
+    <button class="btn btn-feed" onclick="sendCommand('feed')">🐟 ให้อาหารปลา</button>
+    <button class="btn btn-light" onclick="sendCommand('light')">💡 เปิด/ปิดไฟ</button>
+  </div>
+  <script>
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}`);
+    const img = document.getElementById('stream');
+
+    ws.onmessage = async (event) => {
+      if (event.data instanceof Blob) {
+        const url = URL.createObjectURL(event.data);
+        img.src = url;
+        img.onload = () => URL.revokeObjectURL(url); 
+      }
+    };
+    function sendCommand(cmd) { if (ws.readyState === WebSocket.OPEN) ws.send(cmd); }
+  </script>
+</body>
+</html>
